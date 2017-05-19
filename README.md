@@ -17,7 +17,18 @@ This service requires the following skills:
 
 These instructions have been verified as working on a Synology DS1513+ running DSM 6.1.1-15101 Update 2. 
 
+## SpamAssassin Configuration
+
 ## Script Installation
+1. SSH as the administrator to the Synology device
+    * `ssh admin@synology.example.com`
+1. Navigate to the appropriate directory
+    * `cd /usr/local/bin`
+1. Download the `spamscan.sh` script
+    * `sudo wget -O spamscan.sh "https://raw.githubusercontent.com/steventblack/spamscan/master/spamscan.sh"`
+1. Change the owner and permissions of the script
+    * `sudo chown root:root spamscan.sh`
+    * `sudo chmod +x spamscan.sh`
 
 ## Scanning Options
 
