@@ -90,7 +90,7 @@ In order to properly utilize the learning, some configuration changes need to be
 
 Notes:
 
-* The `%org-name%` has a number of restrictions so keeping it short & simple is best. There should be no spaces or punctuation. 
+* The `%org-name%` has a number of restrictions so keeping it short & simple is best. There should be no spaces or punctuation except for a "-". To help improve the readability of the mail headers, it may be desired to start the name with a capital letter and end it with a trailing "-".  e.g. "ExampleCorp-", "MyHouse-", etc. 
 * The `Always Include SpamAssassin Report` line ensures the results of the mail scanner are always included in the mail messages even if the message isn't classified as spam.
 * The `Mutliple Header` and `Place New Headers At Top Of Message` lines should be be changed to ensure that the additional headers from the spam checker do not interfere with other spam control services (e.g. DKIM).
 * The `Log Spam` and `Log Non Spam` lines result in (spam and ham) messages being logged. This output can get rather lengthy over time and may be disabled if the service seems to be performing normally and storage space is a concern.
