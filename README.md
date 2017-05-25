@@ -17,7 +17,14 @@ This service requires the following skills:
 
 These instructions have been verified as working on a Synology DS1513+ running DSM 6.1.1-15101 Update 2. 
 
-## SpamAssassin Configuration
+## Scanning Options
+`-m mailboxdir`
+
+This option specifies the path pattern of the mailbox directories to be scanned. Note that it is intended to be a _pattern_ and not a single directory path, so the argument **must** be enclosed in double quotes in order to prevent premature expansion of the pattern expression. The actual pattern may vary depending on how the user accounts are setup on the Synology device. For local users, the default pattern of `"/volume1/homes/*/.Maildir"` should suffice. For users setup under LDAP, a pattern similar to `"/volume1/homes/@LH-SERVERNAME.EXAMPLE.COM/61/*/.Maildir"` would be required. 
+
+`-b backupdir`
+
+This option specifies the directory where a backup of the SpamAssassin database may be written. If not specified, then **no** backup is created. The directory must exist and have write permissions enabled. The file created will be named `spamassassin.backup`.
 
 ## Script Installation
 1. SSH as the administrator to the Synology device
@@ -29,16 +36,11 @@ These instructions have been verified as working on a Synology DS1513+ running D
 1. Change the owner and permissions of the script
     * `sudo chown root:root spamscan.sh`
     * `sudo chmod +x spamscan.sh`
-
-## Scanning Options
-`-m mailboxdir`
-
-This option specifies the path pattern of the mailbox directories to be scanned. Note that it is intended to be a _pattern_ and not a single directory path, so the argument **must** be enclosed in double quotes in order to prevent premature expansion of the pattern expression. The actual pattern may vary depending on how the user accounts are setup on the Synology device. For local users, the default pattern of `"/volume1/homes/*/.Maildir"` should suffice. For users setup under LDAP, a pattern similar to `"/volume1/homes/@LH-SERVERNAME.EXAMPLE.COM/61/*/.Maildir"` would be required. 
-
-`-b backupdir`
-
-This option specifies the directory where a backup of the SpamAssassin database may be written. If not specified, then **no** backup is created. The directory must exist and have write permissions enabled. The file created will be named `spamassassin.backup`.
-
+1. Verify the script works with the desired command line options
+    * `sudo ./spamscan.sh -m <mailboxdir> -b <backupdir>`
+    
+It may take a lengthy period of time for the script to complete if there is a large amoount of email to process. On a DS1513+, it processes ~20,000 messages per hour. Please be patient and verify the script is able to fully execute.
+    
 ## Script Scheduling
 1. Log in as administrator to the Synology DSM (administration interface)
 1. Open up the "Control Panel" app.
@@ -56,9 +58,43 @@ This option specifies the directory where a backup of the SpamAssassin database 
     * Send run details by email: `<your email here>`
     * User defined script: `sudo /usr/local/bin/spamscan.sh`
 
-If options are specified for the script (`-m` or `-b`), then they must be included as part of the user defined script declaration.
+If options are specified for the script (`-m` or `-b`), then they must be included as part of the user defined script declaration. It is also recommended that the output be captured in order to verify the system is working as expected. The script can use standard Unix output redirection in order to capture the output to a log file.
 
 The run time should be set to a period that enables the script to pick up new patterns frequently. However, the period should be longer than the scan time in order to prevent processes from "piling up". (e.g. If it takes an hour to complete the scan, then it should repeat no sooner than every 2 hours in order to prevent multiple scans from running concurrently.) It is not strictly necessary to have the run details sent via email, but enabling it may help if there's a need to troubleshoot.
+
+A full working example of a user defined script which captures the output to a log file is provided below. Note that the `-m` param _requires_ the double quotes surrounding it in order to prevent premature expansion of the pattern. The output is redirected to `/tmp/spamscan.log` and should capture both stdout as well as stderr output (`2>&1`).
+
+`sudo /usr/local/bin/spamscan.sh -m "/volume1/homes/*/.Maildir" -b /volume1/Archives >> /tmp/spamscan.log 2>&1`
+
+## SpamAssassin Configuration
+In order to properly utilize the learning, some configuration changes need to be made to the configuration files of the MailServer package. In order to preserve the changes over system reboots, the change must be made in the "template" file. In addition, it is probably a good practice to review the configuration files after system upgrades or if the MailServer package has been upgraded in order to ensure the necessary changes are preserved.
+
+1. SSH as the administrator to the Synology device
+    * `ssh admin@synology.example.com`
+1. Navigate to the appropriate directory
+    * `cd /var/packages/MailServer/target/etc/template`
+1. Open `mailscanner.template` for editing
+    * `sudo vi mailscanner.template`
+1. Update the following lines and save the file
+    * `%org-name% = <organization>`
+    * `Always Include SpamAssassin Report = yes`
+    * `Multiple Headers = add`
+    * `Place New Headers At Top Of Message = yes`
+    * `Log Spam = yes`
+    * `Log Non Spam = yes`
+1. Log in as administrator to the Synology DSM (administration interface)
+1. Open up the "Packages" app.
+1. Select the "Mail Server" service.
+1. Stop the Mail Server using the drop-down menu
+1. Restart the Mail Server by selecting "Run" using the drop-down menu
+
+Notes:
+
+* The `%org-name%` has a number of restrictions so keeping it short & simple is best. There should be no spaces or punctuation. 
+* The `Always Include SpamAssassin Report` line ensures the results of the mail scanner are always included in the mail messages even if the message isn't classified as spam.
+* The `Mutliple Header` and `Place New Headers At Top Of Message` lines should be be changed to ensure that the additional headers from the spam checker do not interfere with other spam control services (e.g. DKIM).
+* The `Log Spam` and `Log Non Spam` lines result in (spam and ham) messages being logged. This output can get rather lengthy over time and may be disabled if the service seems to be performing normally and storage space is a concern.
+* Stopping and restarting the Mail Server service is required to pickup the changes in the mailscanner.template configuration file. There may be additional steps required if dependent packages are installed (e.g. Mail Station).
 
 ## Caveats
 This solution helps to improve upon the default spam-filtering capabilities with the Synology MailServer app. However, it takes exposure to a large body of mail (both Spam and Ham) for it to truly become effective. For smaller setups, this may take a longer period of time to accumulate enough datapoints to markedly improve the spam detection capabilities. 
