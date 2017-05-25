@@ -10,6 +10,7 @@
 # 2017-05-18 - 1.3.0 Process command line args for mailboxdir and backupdir
 # 2017-05-20 - 1.4.0 Break into procedures; set default value for mailboxdir
 # 2017-05-24 - 1.5.0 Add option for log directory
+# 2017-05-25 - 1.5.1 Remove option for log directory
 #
 #######################
 
@@ -23,15 +24,14 @@ do
   case "$OPTLABEL" in
     m) MAILBOXDIR="$OPTARG";;
     b) BACKUPDIR="$OPTARG";;
-    l) LOGDIR="$OPTARG";; 
-    [?]) echo "Usage $0 [-m mailboxdir] [-b backupdir] [-l logdir]" >&2
+    [?]) echo "Usage $0 [-m mailboxdir] [-b backupdir]" >&2
          exit 1;;
   esac
 done
 
 # If MAILBOXDIR isn't set (or is null), then use default value
+# Assume no backup desired
 MAILBOXDIR=${MAILBOXDIR:="/volume1/homes/*/.Maildir"}
-LOGDIR=${LOGDIR:="/var/log"}
 MAKEBACKUP=0;
 MAILSERVER="/var/packages/MailServer/target"
 MAILPERLLIB="${MAILSERVER}/lib/perl5" 
@@ -43,6 +43,7 @@ if [ -z "$MAILBOXDIR" ]; then
   exit 1
 fi
 
+# figure out if a backup is desired and can be created
 if [ ! -z "$BACKUPDIR" ]; then
   if [ ! -d "$BACKUPDIR" ]; then
     echo "FATAL: Backup directory does not exist (\"$BACKUPDIR\")" >&2
@@ -54,6 +55,7 @@ if [ ! -z "$BACKUPDIR" ]; then
     exit 1
   fi
   
+  # backup prerequisites have been met; try to make backup
   MAKEBACKUP=1; 
 fi
 
@@ -98,7 +100,6 @@ dump_status () {
 }
 
 backup_spamdb () {
-  # if backup directory specified, exists, and is writeable...
   if [ $MAKEBACKUP -lt 1 ]; then
     return
   fi
