@@ -11,6 +11,7 @@
 # 2017-05-20 - 1.4.0 Break into procedures; set default value for mailboxdir
 # 2017-05-24 - 1.5.0 Add option for log directory
 # 2017-05-25 - 1.5.1 Remove option for log directory
+# 2017-05-27 - 1.5.2 Run sa-learn as user postfix
 #
 #######################
 
@@ -64,6 +65,7 @@ scan_mail () {
 
   echo "Scanning Spam folder(s)"
   perl -T -Mlib="${MAILPERLLIB}" "${MAILSERVER}/bin/sa-learn" \
+        --username=postfix \
         --siteconfigpath "${MAILSERVER}/etc/spamassassin" \
         --dbpath "${DBPATH}" \
         --no-sync \
@@ -71,6 +73,7 @@ scan_mail () {
 
   echo "Scanning Ham folder(s)"
   perl -T -Mlib="${MAILPERLLIB}" "${MAILSERVER}/bin/sa-learn" \
+        --username=postfix \
         --siteconfigpath "${MAILSERVER}/etc/spamassassin" \
         --dbpath "${DBPATH}" \
         --no-sync \
@@ -79,6 +82,7 @@ scan_mail () {
   # Need to do the sync now as the Spam & Ham checks were performed no-sync for faster processing
   echo "Syncing SpamAssassin DB"
   perl -T -Mlib="${MAILPERLLIB}" "${MAILSERVER}/bin/sa-learn" \
+        --username=postfix \
         --siteconfigpath "${MAILSERVER}/etc/spamassassin" \
         --dbpath "${DBPATH}" \
         --sync
@@ -86,6 +90,7 @@ scan_mail () {
   # Forgetting requires read/write access to the DB and so cannot be called w/ no-sync
   echo "Scanning Retrain folder(s)"
   perl -T -Mlib="${MAILPERLLIB}" "${MAILSERVER}/bin/sa-learn" \
+        --username=postfix \
         --siteconfigpath "${MAILSERVER}/etc/spamassassin" \
         --dbpath "${DBPATH}" \
         --forget "${MAILBOXDIR}/.Retrain/{new,cur}"
@@ -94,6 +99,7 @@ scan_mail () {
 dump_status () {
   echo "Current Status"
   perl -T -Mlib="${MAILPERLLIB}" "${MAILSERVER}/bin/sa-learn" \
+        --username=postfix \
         --siteconfigpath "${MAILSERVER}/etc/spamassassin" \
         --dbpath "${DBPATH}" \
         --dump magic
@@ -106,6 +112,7 @@ backup_spamdb () {
 
   echo "Backing up SpamAssassin DB"
   perl -T -Mlib="${MAILPERLLIB}" "${MAILSERVER}/bin/sa-learn" \
+        --username=postfix \
         --siteconfigpath "${MAILSERVER}/etc/spamassassin" \
         --dbpath "${DBPATH}" \
         --backup > "${BACKUPDIR}/spamassassin.backup"
