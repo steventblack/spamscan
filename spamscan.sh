@@ -12,6 +12,7 @@
 # 2017-05-24 - 1.5.0 Add option for log directory
 # 2017-05-25 - 1.5.1 Remove option for log directory
 # 2017-05-27 - 1.5.2 Run sa-learn as user postfix
+# 2017-05-28 - 1.5.3 Force ownership back to MailScanner defaults for Bayes dbs
 #
 #######################
 
@@ -122,6 +123,10 @@ echo "==== Scan Start: $(date) ===="
 scan_mail 
 dump_status
 backup_spamdb
+
+# Make sure set ownership back to the default so that
+# the MailScanner service can access the database
+chown postfix:root "${DBPATH}"/bayes_*
 echo "==== Scan Complete: $(date) ===="
 
 exit 0
