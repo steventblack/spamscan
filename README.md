@@ -96,5 +96,12 @@ Notes:
 * The `Log Spam` and `Log Non Spam` lines result in (spam and ham) messages being logged. This output can get rather lengthy over time and may be disabled if the service seems to be performing normally and storage space is a concern.
 * Stopping and restarting the Mail Server service is required to pickup the changes in the mailscanner.template configuration file. There may be additional steps required if dependent packages are installed (e.g. Mail Station).
 
+## Usage
+The script will search only selected email folders for training. The names of the email folders must match exactly (including capitalization) or the folder will not be scanned. Folders cannot be nested.
+
+- Ham: The primary inbox of the email directory is scanned for examples of _ham_
+- Spam: An email folder named "**Junk**" is scanned for examples of _spam_
+- Retraining: An email folder named "**Retrain**" is scanned if a message has been incorrectly tagged (as either spam or ham)
+
 ## Caveats
 This solution helps to improve upon the default spam-filtering capabilities with the Synology MailServer app. However, it takes exposure to a large body of mail (both Spam and Ham) for it to truly become effective. For smaller setups, this may take a longer period of time to accumulate enough datapoints to markedly improve the spam detection capabilities. 
