@@ -18,13 +18,42 @@ This service requires the following skills:
 These instructions have been verified as working on a Synology DS1513+ running DSM 6.1.1-15101 Update 2. 
 
 ## Scanning Options
-`-m mailboxdir`
-
-This option specifies the path pattern of the mailbox directories to be scanned. Note that it is intended to be a _pattern_ and not a single directory path, so the argument **must** be enclosed in double quotes in order to prevent premature expansion of the pattern expression. The actual pattern may vary depending on how the user accounts are setup on the Synology device. For local users, the default pattern of `"/volume1/homes/*/.Maildir"` should suffice. For users setup under LDAP, a pattern similar to `"/volume1/homes/@LH-SERVERNAME.EXAMPLE.COM/61/*/.Maildir"` would be required. 
 
 `-b backupdir`
 
 This option specifies the directory where a backup of the SpamAssassin database may be written. If not specified, then **no** backup is created. The directory must exist and have write permissions enabled. The file created will be named `spamassassin.backup`.
+
+`-h`
+
+This option specifies a scan for ham (non-spam) email should be performed. The directory(s) to be scanned use the mailbox path pattern as specified by the `-m` option or the default mailbox path pattern if no other pattern supplied. In general, a directory of recent, pre-screened email messages should be referenced so that the Bayes system is able to learn effectively.
+
+`-H hamdir`
+
+The option specifies a scan for ham (non-spam) email should be performed. The directory to be scanned is specified with this option so the full path to the ham directory should be provided. In general, a directory of recent, pre-screened email messages should be referenced so that the Bayes system is able to learn effectively. If a path pattern is provided, it **must** be enclosed within double quotes in order to prevent premature pattern expansion.
+
+`-i`
+
+This option prints out basic information about the Bayes database. More information about the output can be found at the SpamAssassin site.
+
+`-m mailboxdir`
+
+This option specifies the path pattern of the mailbox directories to be scanned. Note that it is intended to be a _pattern_ and not a single directory path, so the argument **must** be enclosed in double quotes in order to prevent premature expansion of the pattern expression. The actual pattern may vary depending on how the user accounts are setup on the Synology device. For local users, the default pattern of `"/volume1/homes/*/.Maildir"` should suffice. For users setup under LDAP, a pattern similar to `"/volume1/homes/@LH-SERVERNAME.EXAMPLE.COM/61/*/.Maildir"` would be required. 
+
+`-r`
+
+This option specifies a scan for email that was misclassified in order to reset the learning associated with the message. Messages which are either incorrectly classified as ham **or** spam can be placed into the designated "Retrain" folder for processing. The directory(s) to be scanned use the mailbox path pattern as specified by the `-m` option or the default mailbox path pattern if no other pattern supplied. This option requires the directory to be named "Retrain".
+
+`-R retraindir`
+
+The option specifies a scan for retraining email should be performed. The full path of the directory to be scanned is specified with this option. If a path pattern is provided, it **must** be enclosed in double quotes in order to prevent premature expansion of the pattern expression.
+
+`-s`
+
+This option specifies a scan for spam email should be performed. The directory(s) to be scanned use the mailbox path pattern as specified by the `-m` option or the default mailbox path pattern if no other pattern supplied. In general, a directory of recent, pre-screened email messages should be referenced so that the Bayes system is able to learn effectively.
+
+`-S spamdir`
+
+The option specifies a scan for spam email should be performed. The full path of the directory to be scanned is specified with this option. In general, a directory of recent, pre-screened email messages that are known to contain only spam should be referenced so that the Bayes system is able to learn effectively. If a path pattern is provided, it **must** be enclosed within double quotes in order to prevent premature pattern expansion.
 
 ## Script Installation
 1. SSH as the administrator to the Synology device
@@ -97,7 +126,7 @@ Notes:
 * Stopping and restarting the Mail Server service is required to pickup the changes in the mailscanner.template configuration file. There may be additional steps required if dependent packages are installed (e.g. Mail Station).
 
 ## Usage
-The script will search only selected email folders for training. The names of the email folders must match exactly (including capitalization) or the folder will not be scanned. Folders cannot be nested.
+The script will search only selected email folders for training. If the directory paths are not explicitly provided, the names of the email folders must match exactly (including capitalization) or it will not be scanned.
 
 - Ham: The primary inbox of the email directory is scanned for examples of _ham_
 - Spam: An email folder named "**Junk**" is scanned for examples of _spam_
