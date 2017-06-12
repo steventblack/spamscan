@@ -49,7 +49,7 @@ The option specifies a scan for retraining email should be performed. The full p
 
 `-s`
 
-This option specifies a scan for spam email should be performed. The directory(s) to be scanned use the mailbox path pattern as specified by the `-m` option or the default mailbox path pattern if no other pattern supplied. In general, a directory of recent, pre-screened email messages should be referenced so that the Bayes system is able to learn effectively.
+This option specifies a scan for spam email should be performed. The directory(s) to be scanned use the mailbox path pattern as specified by the `-m` option (or the default mailbox path pattern if no other pattern supplied) and must be in a subdirectory named "Junk".
 
 `-S spamdir`
 
@@ -76,7 +76,7 @@ It may take a lengthy period of time for the script to complete if there is a la
 1. Select the "Task Scheduler" service.
 1. Create a new Scheduled Task for a user-defined script.
 1. For the "General" tab, fill in the fields as follows:
-    * Task: `Spam Scn Update`
+    * Task: `Spam Scan Update`
     * User: `root`
     * Enabled: (checked)
 1. For the "Schedule" tab, fill in fields as follows:
@@ -87,13 +87,13 @@ It may take a lengthy period of time for the script to complete if there is a la
     * Send run details by email: `<your email here>`
     * User defined script: `sudo /usr/local/bin/spamscan.sh`
 
-If options are specified for the script (`-m` or `-b`), then they must be included as part of the user defined script declaration. It is also recommended that the output be captured in order to verify the system is working as expected. The script can use standard Unix output redirection in order to capture the output to a log file.
+If options are desired for the script, then they must be included as part of the user defined script declaration. It is also recommended that the output be captured in order to verify the system is working as expected. The script can use standard Unix output redirection in order to capture the output to a log file.
 
 The run time should be set to a period that enables the script to pick up new patterns frequently. However, the period should be longer than the scan time in order to prevent processes from "piling up". (e.g. If it takes an hour to complete the scan, then it should repeat no sooner than every 2 hours in order to prevent multiple scans from running concurrently.) It is not strictly necessary to have the run details sent via email, but enabling it may help if there's a need to troubleshoot.
 
 A full working example of a user defined script which captures the output to a log file is provided below. Note that the `-m` param _requires_ the double quotes surrounding it in order to prevent premature expansion of the pattern. The output is redirected to `/tmp/spamscan.log` and should capture both stdout as well as stderr output (`2>&1`).
 
-`sudo /usr/local/bin/spamscan.sh -m "/volume1/homes/*/.Maildir" -b /volume1/Archives >> /tmp/spamscan.log 2>&1`
+`sudo /usr/local/bin/spamscan.sh -m "/volume1/homes/*/.Maildir" -r -s -i -b /volume1/Archives >> /tmp/spamscan.log 2>&1`
 
 ## SpamAssassin Configuration
 In order to properly utilize the learning, some configuration changes need to be made to the configuration files of the MailServer package. In order to preserve the changes over system reboots, the change must be made in the "template" file. In addition, it is probably a good practice to review the configuration files after system upgrades or if the MailServer package has been upgraded in order to ensure the necessary changes are preserved.
